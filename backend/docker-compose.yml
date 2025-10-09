@@ -1,0 +1,27 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: api_ong_postgres
+    restart: always
+    ports:
+      - 5450:5432
+    environment:
+      POSTGRES_USER: apiuser
+      POSTGRES_PASSWORD: apipass
+      POSTGRES_DB: apidb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: api_ong_pgadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    depends_on:
+      - postgres
+volumes:
+  pgdata:
