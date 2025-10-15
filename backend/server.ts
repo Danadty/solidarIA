@@ -12,7 +12,7 @@ const app = express();
 //Importamos el contenido del .env
 dotenv.config();
 const PORT = process.env.PORT;
-const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN!;
+// const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN!;
 
 //App confugaration
 app.use(express.urlencoded({ extended: false }));
@@ -22,7 +22,7 @@ app.use(cors());
 
 // Agrega credenciales
 const client = new MercadoPagoConfig({
-  accessToken: ACCESS_TOKEN
+  accessToken: process.env.MP_ACCESS_TOKEN!
 });
 
 //Routes ping
@@ -33,10 +33,9 @@ app.get("/ping", (req: Request, res: Response) => {
 //Route to post a preference
 app.post("/create-preference", async (req: Request, res: Response) => {
   try {
-    const preference = new Preference(client);
     const item = req.body.items[0];
 
-   const result = await preference.create({
+    const preference = await new Preference(client).create({
       body:{
         items: [
           {
@@ -46,26 +45,30 @@ app.post("/create-preference", async (req: Request, res: Response) => {
             unit_price: parseFloat(item.unit_price),
           },
         ],
-         back_urls: {
-            success: `http://localhost:3000/success`,
-            failure: `http://localhost:3000/failure`,
-            pending: `http://localhost:3000/pending`,
-      },
-      auto_return: "approved", // Redirige automáticamente solo si el pago es aprobado
       }
     });
 
-    console.log("Preferencia create:", result);
+    console.log("Preferencia create:", preference);
+    res.json({
+      id: preference.id,
+      init_point: preference.init_point
+    })
 
-    res.status(200).json({
-      preferenceId: result.id
-    });
   } catch (error) {
     console.error("Error creando preferencia:", error);
     res.status(500).json({ error: "Error creating preference" });
   }
 });
 
-app.listen(PORT || 3000, () => {
-  console.log(`Server is now running on ${PORT} || 3000`);
+//     res.status(200).json({
+//       preferenceId: preference.id
+//     });
+//   } catch (error) {
+//     console.error("Error creando preferencia:", error);
+//     res.status(500).json({ error: "Error creating preference AAAAAA" });
+//   }
+// });
+
+app.listen(PORT, () => {
+  console.log(`Server is now running on ${PORT}`);
 });
