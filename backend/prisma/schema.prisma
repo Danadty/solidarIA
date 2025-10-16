@@ -40,7 +40,7 @@ model User {
 
   donations    Donation[]   //  Un usuario puede tener muchas donaciones
 
-  @@map("user")
+  @@map("users")
 }
 
 model UserProfile {
@@ -62,7 +62,7 @@ model UserProfile {
 model Admin{
   id      String  @id @default(uuid()) @db.Uuid
   name    String  @unique
-  userId  String  @unique
+  userId  String  @unique @db.Uuid
   user    User    @relation(fields: [userId], references: [id])
   @@map("admin")
 }
@@ -89,7 +89,7 @@ model Foundation {
   @@map("foundation")
 }
 model Campaign {
-  id         String      @id @default(uuid())
+  id         String      @id @default(uuid()) @db.Uuid
   title      String      @unique
   description String?    
   imageUrl   String?
@@ -108,8 +108,8 @@ model Campaign {
 }
 // relation many to many
 model userCampaign {
-  id         String      @id @default(uuid())
-  joinDate   DateTime    @map("join_date")
+  id         String      @id @default(uuid()) @db.Uuid
+  joinDate   DateTime    @default(now()) @map("join_date")
 
   userId     String      @db.Uuid
   campaignId String      @db.Uuid
@@ -117,6 +117,7 @@ model userCampaign {
   campaign   Campaign    @relation(fields: [campaignId], references: [id])
   @@map("user_campaign")
   @@index([userId, campaignId])
+  @@unique([userId, campaignId])
 }
 
 
@@ -135,10 +136,10 @@ model Donation {
 
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt // only for status change
-  userId     String?      
+  userId     String?      @db.Uuid
   user       User?        @relation(fields: [userId], references: [id])
   
-  foundationId String       // FK hacia Foundation N:1 
+  foundationId String     @db.Uuid  // FK hacia Foundation N:1 
   foundation   Foundation   @relation(fields: [foundationId], references: [id])
 
 
