@@ -45,11 +45,17 @@ app.post("/create-preference", async (req: Request, res: Response) => {
             unit_price: parseFloat(item.unit_price),
           },
         ],
+        back_urls: {
+        success: "https://www.tu-sitio/success",
+        failure: "https://www.tu-sitio/failure",
+        pending: "https://www.tu-sitio/pending"
+      },
+      auto_return: "approved",
       }
     });
 
     console.log("Preferencia create:", preference);
-    res.json({
+    res.status(200).json({
       id: preference.id,
       init_point: preference.init_point
     })
@@ -59,15 +65,6 @@ app.post("/create-preference", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Error creating preference" });
   }
 });
-
-//     res.status(200).json({
-//       preferenceId: preference.id
-//     });
-//   } catch (error) {
-//     console.error("Error creando preferencia:", error);
-//     res.status(500).json({ error: "Error creating preference AAAAAA" });
-//   }
-// });
 
 app.listen(PORT, () => {
   console.log(`Server is now running on ${PORT}`);
