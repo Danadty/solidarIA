@@ -36,6 +36,8 @@ export class CreateCampaignDto {
     @Matches(/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, { message: 'Image URL must be a valid URL' })
     imageUrl?: string;
 
+    
+
     @ApiProperty({
         example: '2022-01-01T00:00:00.000Z',
         description: 'Campaign start date',

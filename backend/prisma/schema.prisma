@@ -93,6 +93,7 @@ model Campaign {
   title      String      @unique
   description String?    
   imageUrl   String?
+  publicId   String?
   start_Date  DateTime   @map("start_date")
   end_Date    DateTime   @map("end_date")
  // Relación muchos a muchos con UserCampaign osea user
@@ -103,6 +104,7 @@ model Campaign {
   foundation   Foundation   @relation(fields: [foundationId], references: [id])
   
   campaignImage campaignImage[]
+
 
   @@map("campaign")
 }
@@ -124,13 +126,13 @@ model userCampaign {
 
 model Donation {
   id         String      @id @default(uuid()) @db.Uuid
-  amount     Float
+  amount     Decimal     @db.Decimal(10, 2)
 
   isAnonymous    Boolean      @default(false)
   donorName      String?
   donorEmail     String?
 
-  status         DonationStatus
+  status         DonationStatus @default(PENDING)
   paymentMethod  PaymentMethod
   transactionCode String?
 
@@ -162,6 +164,7 @@ model campaignImage {
   id         String      @id @default(uuid()) @db.Uuid
   description String?
   image_Url   String
+  public_id   String
   campaignId String       @db.Uuid
   campaign   Campaign    @relation(fields: [campaignId], references: [id])
   @@map("campaign_image")

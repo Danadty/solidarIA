@@ -3,10 +3,13 @@ import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isUUID } from 'class-validator';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class CampaignService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService,
+    private cloudinaryService: CloudinaryService,
+  ) { }
 
   public async create(createCampaignDto: CreateCampaignDto) {
     try {
@@ -30,7 +33,7 @@ export class CampaignService {
           imageUrl: createCampaignDto.imageUrl,
           start_Date: new Date(createCampaignDto.startDate),
           end_Date: new Date(createCampaignDto.endDate),
-          foundationId : createCampaignDto.foundationId,
+          foundationId: createCampaignDto.foundationId,
         },
       });
 
@@ -89,4 +92,128 @@ export class CampaignService {
       throw error; // re-lanza la excepción para que NestJS la maneje
     }
   }
+
+  public async uploadPortada(file: Express.Multer.File, campaignid: string) {
+    if (!isUUID(campaignid)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${campaignid}`);
+    }
+    try {
+      // Verificar que exista
+      const campaign = await this.prisma.campaign.findUnique({
+        where: { id: campaignid },
+      });
+
+      if (!campaign) {
+        throw new NotFoundException(`Campaign with id ${campaignid} not found`);
+      }
+      const result = await this.cloudinaryService.uploadImage(file);
+      // 3️⃣ Guardar la URL y public_id en la campaña
+      const updatedCampaign = await this.prisma.campaign.update({
+        where: { id: campaignid },
+        data: {
+          imageUrl: result.url,
+          publicId: result.public_id,
+        },
+      });
+      // 4 Retornar respuesta al cliente
+      return {
+        message: 'Portada actualizada correctamente',
+        portadaUrl: updatedCampaign.imageUrl,
+        publicId: updatedCampaign.publicId,
+      };
+    } catch (error) {
+      console.error('Error actualizando portada:', error);
+      throw error; // re-lanza la excepción para que NestJS la maneje
+    }
+
+  }
+
+  public async uploadImage(file: Express.Multer.File, campaignid: string, description: string) {
+    if (!file) throw new BadRequestException('No file provided');
+
+    if (!isUUID(campaignid)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${campaignid}`);
+    }
+    try {
+      // Verificar que exista
+      const campaign = await this.prisma.campaign.findUnique({
+        where: { id: campaignid },
+      });
+
+      if (!campaign) {
+        throw new NotFoundException(`Campaign with id ${campaignid} not found`);
+      }
+      const result = await this.cloudinaryService.uploadImage(file);
+
+      const newCampaignImage = await this.prisma.campaignImage.create({
+        data: {
+          description: description,
+          image_Url: result.url,
+          public_id: result.public_id,
+          campaignId: campaignid,
+        },
+      });
+      return {
+        message: 'Imagen subida correctamente',
+        imageUrl: newCampaignImage.image_Url,
+        publicId: newCampaignImage.public_id,
+      };
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      throw error; // re-lanza la excepción para que NestJS la maneje
+    }
+  }
+
+  public async deleteCampaignImage(imageId: string) {
+    if (!isUUID(imageId)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${imageId}`);
+    }
+    try {
+      // Verificar que exista
+      const campaignImage = await this.prisma.campaignImage.findUnique({
+        where: { id: imageId },
+      });
+
+      if (!campaignImage) {
+        throw new NotFoundException(`Campaign image with id ${imageId} not found`);
+      }
+      // 1️⃣ Borrar la imagen en Cloudinary usando publicId
+      if (campaignImage.public_id) {
+        await this.cloudinaryService.deleteImage(campaignImage.public_id);
+      }
+      // 2️⃣ Borrar el registro en la base de datos
+      await this.prisma.campaignImage.delete({ where: { id: imageId } });
+
+      return { message: 'Imagen de campaña eliminada correctamente' };
+    } catch (error) {
+      console.error('Error deleting campaign image:', error);
+      throw error; // re-lanza la excepción para que NestJS la maneje
+    }
+
+  }
+
+    public async getCampaignImages(campaignId: string) {
+      if (!isUUID(campaignId)) {
+        throw new BadRequestException(`Invalid UUID format for id: ${campaignId}`);
+      }
+      try {
+        const campaign = await this.prisma.campaign.findUnique({
+          where: { id: campaignId },
+          include: { campaignImage:true },
+        });
+        if (!campaign) {
+          throw new NotFoundException(`Campaign with id ${campaignId} not found`);
+        }
+        return campaign.campaignImage.map(img => ({
+          id: img.id,
+          description: img.description,
+          image_Url: img.image_Url,
+        }));
+      } catch (error) {
+        console.error('Error fetching campaign images:', error);
+        throw error;
+        
+      }
+    }
+
 }
