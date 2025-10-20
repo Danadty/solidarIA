@@ -30,7 +30,7 @@ export class CampaignService {
         data: {
           title: createCampaignDto.title,
           description: createCampaignDto.description,
-          imageUrl: createCampaignDto.imageUrl,
+          // imageUrl: createCampaignDto.imageUrl,
           start_Date: new Date(createCampaignDto.startDate),
           end_Date: new Date(createCampaignDto.endDate),
           foundationId: createCampaignDto.foundationId,
@@ -79,6 +79,21 @@ export class CampaignService {
       if (!campaign) {
         throw new NotFoundException(`Campaign with id ${id} not found`);
       }
+      if (campaign.publicId) {
+        await this.cloudinaryService.deleteImage(campaign.publicId);
+      }
+
+      const campaignImages = await this.prisma.campaignImage.findMany({
+        where: { campaignId: id },
+      });
+
+      for (const img of campaignImages) {
+        if (img.public_id) {
+          await this.cloudinaryService.deleteImage(img.public_id);
+        }
+      }
+
+      await this.prisma.campaignImage.deleteMany({ where: { campaignId: id } });
 
       // Eliminar
       await this.prisma.campaign.delete({
@@ -93,7 +108,44 @@ export class CampaignService {
     }
   }
 
-  public async uploadPortada(file: Express.Multer.File, campaignid: string) {
+  // public async uploadPortada(file: Express.Multer.File, campaignid: string) { 
+
+  //   if (!isUUID(campaignid)) {
+  //     throw new BadRequestException(`Invalid UUID format for id: ${campaignid}`);
+  //   }
+  //   try {
+  //     // Verificar que exista
+  //     const campaign = await this.prisma.campaign.findUnique({
+  //       where: { id: campaignid },
+  //     });
+
+  //     if (!campaign) {
+  //       throw new NotFoundException(`Campaign with id ${campaignid} not found`);
+  //     }
+  //     const result = await this.cloudinaryService.uploadImage(file);
+  //     // 3️⃣ Guardar la URL y public_id en la campaña
+  //     const updatedCampaign = await this.prisma.campaign.update({
+  //       where: { id: campaignid },
+  //       data: {
+  //         imageUrl: result.url,
+  //         publicId: result.public_id,
+  //         },
+  //       });
+  //       return {
+  //         message: 'Portada actualizada correctamente',
+  //         portadaUrl: updatedCampaign.imageUrl,
+  //         publicId: updatedCampaign.publicId,
+  //       };
+  //     } catch (error) {
+  //       console.error('Error actualizando portada:', error);
+  //       throw error; // re-lanza la excepción para que NestJS la maneje
+  //     }
+
+  // }
+  public async uploadOrUpdatePortada(file: Express.Multer.File, campaignid: string) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
     if (!isUUID(campaignid)) {
       throw new BadRequestException(`Invalid UUID format for id: ${campaignid}`);
     }
@@ -105,6 +157,9 @@ export class CampaignService {
 
       if (!campaign) {
         throw new NotFoundException(`Campaign with id ${campaignid} not found`);
+      }
+      if (campaign.publicId) {
+        await this.cloudinaryService.deleteImage(campaign.publicId);
       }
       const result = await this.cloudinaryService.uploadImage(file);
       // 3️⃣ Guardar la URL y public_id en la campaña
@@ -119,7 +174,7 @@ export class CampaignService {
       return {
         message: 'Portada actualizada correctamente',
         portadaUrl: updatedCampaign.imageUrl,
-        publicId: updatedCampaign.publicId,
+        // publicId: updatedCampaign.publicId,
       };
     } catch (error) {
       console.error('Error actualizando portada:', error);
@@ -192,28 +247,28 @@ export class CampaignService {
 
   }
 
-    public async getCampaignImages(campaignId: string) {
-      if (!isUUID(campaignId)) {
-        throw new BadRequestException(`Invalid UUID format for id: ${campaignId}`);
-      }
-      try {
-        const campaign = await this.prisma.campaign.findUnique({
-          where: { id: campaignId },
-          include: { campaignImage:true },
-        });
-        if (!campaign) {
-          throw new NotFoundException(`Campaign with id ${campaignId} not found`);
-        }
-        return campaign.campaignImage.map(img => ({
-          id: img.id,
-          description: img.description,
-          image_Url: img.image_Url,
-        }));
-      } catch (error) {
-        console.error('Error fetching campaign images:', error);
-        throw error;
-        
-      }
+  public async getCampaignImages(campaignId: string) {
+    if (!isUUID(campaignId)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${campaignId}`);
     }
+    try {
+      const campaign = await this.prisma.campaign.findUnique({
+        where: { id: campaignId },
+        include: { campaignImage: true },
+      });
+      if (!campaign) {
+        throw new NotFoundException(`Campaign with id ${campaignId} not found`);
+      }
+      return campaign.campaignImage.map(img => ({
+        id: img.id,
+        description: img.description,
+        image_Url: img.image_Url,
+      }));
+    } catch (error) {
+      console.error('Error fetching campaign images:', error);
+      throw error;
+
+    }
+  }
 
 }

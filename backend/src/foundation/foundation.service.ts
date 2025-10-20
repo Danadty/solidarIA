@@ -5,10 +5,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { Foundation } from './entities/foundation.entity';
 import { validate as isUUID } from 'uuid';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class FoundationService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService,
+    private cloudinaryService: CloudinaryService,
+  ) { }
 
   public async create(createFoundationDto: CreateFoundationDto) {
     try {
@@ -38,7 +41,6 @@ export class FoundationService {
           id: newID,
           name: createFoundationDto.name,
           description: createFoundationDto.description,
-          logo_url: createFoundationDto.logo_url,
           contact_phone: createFoundationDto.contact_phone,
           contact_email: createFoundationDto.contact_email,
           userId: createFoundationDto.userId,
@@ -117,11 +119,70 @@ export class FoundationService {
       throw new NotFoundException(`Foundation with id ${id} not found`);
     }
 
+    if(foundation.logoPublicId){
+      // Eliminar
+      await this.cloudinaryService.deleteImage(foundation.logoPublicId);
+    }
     // Eliminar
     await this.prisma.foundation.delete({
       where: { id },
     });
 
     return { message: `Foundation with id ${id} has been deleted.` };
+  }
+
+
+  public async updateLogo(foundationId: string, image: { url: string; publicId: string }) {
+    try {
+      // Verificar que exista
+      const foundation = await this.prisma.foundation.findUnique({
+        where: { id: foundationId },
+      });
+
+      if (!foundation) {
+        throw new NotFoundException(`Foundation with id ${foundationId} not found`);
+      }
+
+      // Actualizar
+      const updatedFoundation = await this.prisma.foundation.update({
+        where: { id: foundationId },
+        data: { logo_url: image.url, logoPublicId: image.publicId },
+      });
+
+      return updatedFoundation;
+    } catch (error) {
+      console.error('Error updating foundation logo:', error);
+      throw error;
+    }
+  }
+
+  //parte de las imagenes 
+
+  public async deleteLogo(foundationId: string) {
+    try {
+      // Verificar que exista
+      const foundation = await this.prisma.foundation.findUnique({
+        where: { id: foundationId },
+      });
+
+      if (!foundation) {
+        throw new NotFoundException(`Foundation with id ${foundationId} not found`);
+      }
+
+      if(foundation.logoPublicId){
+        // Eliminar
+        await this.cloudinaryService.deleteImage(foundation.logoPublicId);
+      }
+      // Eliminar
+      await this.prisma.foundation.update({
+        where: { id: foundationId },
+        data: { logo_url: null, logoPublicId: null },
+      });
+
+      return { message: `Logo of foundation with id ${foundationId} has been deleted.` };
+    } catch (error) {
+      console.error('Error deleting foundation logo:', error);
+      throw error; // re-lanza la excepción para que NestJS la maneje
+    }
   }
 }

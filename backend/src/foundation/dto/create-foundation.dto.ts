@@ -24,15 +24,7 @@ export class CreateFoundationDto {
   @IsString({ message: 'Description must be a string' })
   @MaxLength(500, { message: 'Description must be at most 500 characters' })
   description: string;
-
-  @ApiProperty({
-    description: 'URL logo',
-    example: 'https://example.com/logo.png'
-  })
-  @IsString({ message: 'Logo URL must be a string' })
-  @Matches(/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, { message: 'Logo debe ser una URL válida de imagen' })
-  logo_url: string;
-
+  
   @ApiProperty({
     description: 'Teléfono de contacto',
     example: '+5491123456789'

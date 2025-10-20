@@ -48,6 +48,7 @@ model UserProfile {
   userId    String   @unique @db.Uuid
   description String?
   photoUrl   String?
+  publicId   String?
   phone      String?
   address    String?
   createdAt  DateTime @default(now())
@@ -71,7 +72,8 @@ model Foundation {
   id         String      @id @default(uuid()) @db.Uuid
   name       String      @unique @db.VarChar(100)
   description String      @db.Text
-  logo_url   String   @db.VarChar(255)
+  logo_url   String?   @db.VarChar(255)
+  logoPublicId   String?   @db.VarChar(255)
   contact_phone    String  @db.VarChar(20)
   contact_email    String  @db.VarChar(100)
   createdAt  DateTime    @default(now())

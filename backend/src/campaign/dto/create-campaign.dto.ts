@@ -25,18 +25,18 @@ export class CreateCampaignDto {
     @MaxLength(500, { message: 'Description must be at most 500 characters' })
     description?: string;
 
-    @ApiPropertyOptional({
-        example: 'https://example.com/image.png',
-        description: 'Campaign image (jpg, png, gif, jepg)',
-        maxLength: 500,
-        minLength: 4,
-    })
-    @IsOptional()
-    @IsString({ message: 'Image URL must be a string' })
-    @Matches(/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, { message: 'Image URL must be a valid URL' })
-    imageUrl?: string;
+    // @ApiPropertyOptional({
+    //     example: 'https://example.com/image.png',
+    //     description: 'Campaign image (jpg, png, gif, jepg)',
+    //     maxLength: 500,
+    //     minLength: 4,
+    // })
+    // @IsOptional()
+    // @IsString({ message: 'Image URL must be a string' })
+    // @Matches(/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, { message: 'Image URL must be a valid URL' })
+    // imageUrl?: string;
 
-    
+
 
     @ApiProperty({
         example: '2022-01-01T00:00:00.000Z',

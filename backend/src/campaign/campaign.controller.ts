@@ -3,7 +3,7 @@ import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 @Controller('campaign')
 export class CampaignController {
@@ -19,13 +19,26 @@ export class CampaignController {
     return this.campaignService.findAll();
   }
 
-  @Post(':id/upload-portada')
+  // @ApiOperation({ summary: 'Upload first campaign portada with idCampaign' })
+  // @Post(':id/upload-portada')
+  // @UseInterceptors(FileInterceptor('file'))
+  // @ApiConsumes('multipart/form-data')
+  // async uploadPortada(
+  //   @Param('id') id: string,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ){
+  //   return this.campaignService.uploadPortada(file, id);
+  // }
+
+  @ApiOperation({ summary: 'Update or upload campaign portada with idCampaign' })
+  @Post(':id/update-portada')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadPortada(
+  @ApiConsumes('multipart/form-data')
+  async updatePortada(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.campaignService.uploadPortada(file, id);
+    return this.campaignService.uploadOrUpdatePortada(file, id);
   }
 
   @Post(':id/images')

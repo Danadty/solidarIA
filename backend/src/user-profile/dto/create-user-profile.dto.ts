@@ -12,11 +12,6 @@ export class CreateUserProfileDto {
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ description: 'URL photo user' })
-  @IsOptional()
-  @IsString()
-  photoUrl?: string;
-
   @ApiPropertyOptional({ description: 'contact phone', example: '+5491123456789' })
   @IsOptional()
   @IsString()
