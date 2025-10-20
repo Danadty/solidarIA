@@ -23,7 +23,7 @@ enum UserRole {
 
 // Modelos
 model User {
-  id         String      @id @default(uuid())
+  id         String      @id @default(uuid()) @db.Uuid
   name       String
   email      String      @unique
   password   String
@@ -40,14 +40,15 @@ model User {
 
   donations    Donation[]   //  Un usuario puede tener muchas donaciones
 
-  @@map("user")
+  @@map("users")
 }
 
 model UserProfile {
-  id         String      @id @default(uuid())
-  userId    String   @unique
+  id         String      @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
   description String?
   photoUrl   String?
+  publicId   String?
   phone      String?
   address    String?
   createdAt  DateTime @default(now())
@@ -60,25 +61,26 @@ model UserProfile {
 
 
 model Admin{
-  id      String  @id @default(uuid())
+  id      String  @id @default(uuid()) @db.Uuid
   name    String  @unique
-  userId  String  @unique
+  userId  String  @unique @db.Uuid
   user    User    @relation(fields: [userId], references: [id])
   @@map("admin")
 }
 
 model Foundation {
-  id         String      @id @default(uuid())
-  name       String      @unique
-  description String?
-  logo_url   String
-  contact_phone    String?
-  contact_email    String?
+  id         String      @id @default(uuid()) @db.Uuid
+  name       String      @unique @db.VarChar(100)
+  description String      @db.Text
+  logo_url   String?   @db.VarChar(255)
+  logoPublicId   String?   @db.VarChar(255)
+  contact_phone    String  @db.VarChar(20)
+  contact_email    String  @db.VarChar(100)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   
   user    User    @relation(fields: [userId], references: [id])
-  userId  String  @unique
+  userId  String  @unique @db.Uuid
 
 // relation one to many
   campaigns Campaign[]
@@ -89,56 +91,59 @@ model Foundation {
   @@map("foundation")
 }
 model Campaign {
-  id         String      @id @default(uuid())
+  id         String      @id @default(uuid()) @db.Uuid
   title      String      @unique
   description String?    
   imageUrl   String?
+  publicId   String?
   start_Date  DateTime   @map("start_date")
   end_Date    DateTime   @map("end_date")
  // Relación muchos a muchos con UserCampaign osea user
   userCampaign userCampaign[]
 
   // relation many to one
-  foundationId String       // FK hacia Foundation
+  foundationId String      @db.Uuid // FK hacia Foundation
   foundation   Foundation   @relation(fields: [foundationId], references: [id])
   
   campaignImage campaignImage[]
+
 
   @@map("campaign")
 }
 // relation many to many
 model userCampaign {
-  id         String      @id @default(uuid())
-  joinDate   DateTime    @map("join_date")
+  id         String      @id @default(uuid()) @db.Uuid
+  joinDate   DateTime    @default(now()) @map("join_date")
 
-  userId     String      @unique
-  campaignId String      @unique
+  userId     String      @db.Uuid
+  campaignId String      @db.Uuid
   user       User        @relation(fields: [userId], references: [id])
   campaign   Campaign    @relation(fields: [campaignId], references: [id])
   @@map("user_campaign")
   @@index([userId, campaignId])
+  @@unique([userId, campaignId])
 }
 
 
 
 model Donation {
-  id         String      @id @default(uuid())
-  amount     Float
+  id         String      @id @default(uuid()) @db.Uuid
+  amount     Decimal     @db.Decimal(10, 2)
 
   isAnonymous    Boolean      @default(false)
   donorName      String?
   donorEmail     String?
 
-  status         DonationStatus
+  status         DonationStatus @default(PENDING)
   paymentMethod  PaymentMethod
   transactionCode String?
 
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt // only for status change
-  userId     String?      @unique
+  userId     String?      @db.Uuid
   user       User?        @relation(fields: [userId], references: [id])
   
-  foundationId String      @unique // FK hacia Foundation N:1 
+  foundationId String     @db.Uuid  // FK hacia Foundation N:1 
   foundation   Foundation   @relation(fields: [foundationId], references: [id])
 
 
@@ -153,15 +158,16 @@ enum DonationStatus {
 }
 enum PaymentMethod {
   MERCADO_PAGO
-  EFECTIVO
+  // EFECTIVO
   // SANDBOX
 }
 
 model campaignImage {
-  id         String      @id @default(uuid())
+  id         String      @id @default(uuid()) @db.Uuid
   description String?
   image_Url   String
-  campaignId String      @unique 
+  public_id   String
+  campaignId String       @db.Uuid
   campaign   Campaign    @relation(fields: [campaignId], references: [id])
   @@map("campaign_image")
 }
