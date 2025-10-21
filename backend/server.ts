@@ -12,7 +12,6 @@ const app = express();
 //Importamos el contenido del .env
 dotenv.config();
 const PORT = process.env.PORT;
-// const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN!;
 
 //App confugaration
 app.use(express.urlencoded({ extended: false }));
