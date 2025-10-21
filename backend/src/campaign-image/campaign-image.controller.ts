@@ -1,14 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { CampaignImageService } from './campaign-image.service';
 import { CreateCampaignImageDto } from './dto/create-campaign-image.dto';
 import { UpdateCampaignImageDto } from './dto/update-campaign-image.dto';
-import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from 'src/common/guards/roles.guards';
+import { AuthGuard } from 'src/common/guards/auth.guards';
+import { Role } from 'src/common/types/user.types';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('campaign-image')
 export class CampaignImageController {
   constructor(private readonly campaignImageService: CampaignImageService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(Role.USER)
   @ApiOperation({ summary: 'Upload campaign image with campaignId' })
   @Post(':campaignId')
   @UseInterceptors(FileInterceptor('file'))

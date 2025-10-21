@@ -1,10 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { UserProfileService } from './user-profile.service';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { Role } from 'src/common/types/user.types';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guards';
+import { AuthGuard } from 'src/common/guards/auth.guards';
+import { Public } from 'src/common/decorators/public.decorator';
 @Controller('user-profile')
 export class UserProfileController {
   constructor(private readonly userProfileService: UserProfileService,
@@ -16,12 +21,17 @@ export class UserProfileController {
     return this.userProfileService.create(createUserProfileDto);
   }
 
-
+  // @Public()
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(Role.USER)
   @Get()
   findAll() {
     return this.userProfileService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(Role.USER)
   @ApiOperation({ summary: 'Upload user profile photo with iduser' })
   @Post(':id/upload-photo')
   @UseInterceptors(FileInterceptor('file'))
