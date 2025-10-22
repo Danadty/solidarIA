@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { FoundationService } from './foundation.service';
 import { CreateFoundationDto } from './dto/create-foundation.dto';
 import { UpdateFoundationDto } from './dto/update-foundation.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { RolesGuard } from 'src/common/guards/roles.guards';
+import { AuthGuard } from 'src/common/guards/auth.guards';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/types/user.types';
 
 @Controller('foundation')
 export class FoundationController {
@@ -17,6 +21,9 @@ export class FoundationController {
     return this.foundationService.create(createFoundationDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER)
   @Get()
   findAll() {
     return this.foundationService.findAll();
@@ -36,7 +43,7 @@ export class FoundationController {
   remove(@Param('id') id: string) {
     return this.foundationService.remove(id);
   }
-  
+
   @Post(':foundationId/upload-logo')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')

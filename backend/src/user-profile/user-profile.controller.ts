@@ -16,12 +16,14 @@ export class UserProfileController {
     private cloudinaryService: CloudinaryService,
   ) { }
 
+
   @Post()
   create(@Body() createUserProfileDto: CreateUserProfileDto) {
     return this.userProfileService.create(createUserProfileDto);
   }
 
   // @Public()
+  @ApiBearerAuth()
   @UseGuards(AuthGuard,RolesGuard)
   @Roles(Role.USER)
   @Get()
