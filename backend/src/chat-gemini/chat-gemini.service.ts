@@ -150,7 +150,7 @@ export class ChatGeminiService {
         // Prompt: pedimos a Gemini que traduzca y genere la recomendación en inglés
         const prompt = `
 The user's language is ${userLang}.
-Translate all content below to English and provide a short, friendly recommendation of up to 5 NGOs that best match the user's interest.
+Translate all content below to English and provide a short, friendly recommendation of up to 5 ONGs that best match the user's interest.
 
 NGOs and their campaigns:
 ${foundationsText}
