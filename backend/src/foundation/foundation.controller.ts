@@ -34,7 +34,7 @@ export class FoundationController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.foundationService.findOne(id);
