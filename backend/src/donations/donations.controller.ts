@@ -4,7 +4,7 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { AuthGuard } from 'src/common/guards/auth.guards';
 import { RolesGuard } from 'src/common/guards/roles.guards';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/types/user.types';
 @Controller('donations')
@@ -46,6 +46,20 @@ export class DonationsController {
   ) {
     return this.donationsService.updateStatus(id, updateDonationStatusDto);
   }
+
+  // Listar donaciones de un usuario específico
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get donations by user ID' })
+  @ApiResponse({ status: 200, description: 'List of donations for the specified user' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format for userId' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async findByUser(@Param('userId') userId: string) {
+    return this.donationsService.findByUser(userId);
+  }
+
 
   /*
   @Get(':id')

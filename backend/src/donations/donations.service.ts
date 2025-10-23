@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from 'src/user/entities/user.entity';
 import { Decimal } from 'generated/prisma/runtime/library';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class DonationsService {
@@ -49,7 +50,7 @@ export class DonationsService {
         include: { user: true, foundation: true },
 
       });
-    }catch (error) {
+    } catch (error) {
       console.error('Error fetching donations:', error);
       throw error;
     }
@@ -57,13 +58,13 @@ export class DonationsService {
 
 
 
-  
+
   findOne(id: number) {
     return `This action returns a #${id} donation`;
   }
 
   public async updateStatus(id: string, updateDonationDto: UpdateDonationDto) {
-     try {
+    try {
       const donation = await this.prisma.donation.findUnique({ where: { id } });
       if (!donation) throw new NotFoundException(`Donation with id ${id} not found`);
 
@@ -79,10 +80,10 @@ export class DonationsService {
     }
   }
 
-  
+
 
   public async remove(id: string) {
-     try {
+    try {
       const donation = await this.prisma.donation.findUnique({ where: { id } });
       if (!donation) throw new NotFoundException(`Donation with id ${id} not found`);
 
@@ -97,5 +98,47 @@ export class DonationsService {
       console.error('Error deleting donation:', error);
       throw error;
     }
+  }
+
+  // find by id user
+  public async findByUser(userId: string) {
+    if (!isUUID(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      });
+      if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+
+      const donations = await this.prisma.donation.findMany({
+        where: { userId },
+        include: {
+          foundation: {
+            select: {
+              id: true,
+              name: true,
+              description: true
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' }, // ordena las donaciones más recientes primero
+      });
+      // Devolver datos
+      return {
+        user,
+        totalDonations: donations.length,
+        donations,
+      };
+    } catch (error) {
+      console.error('Error fetching donations by user:', error);
+      throw error;
+    }
+
   }
 }
