@@ -161,7 +161,7 @@ User: "${userMessage}"
         // Llamada a Gemini
         const result = await generateText({
             model: google('gemini-2.0-flash'),
-            system: `You are a friendly AI assistant recommending NGOs. Always respond in English, regardless of user language.`,
+            system: `You are a friendly AI assistant recommending ONGs. Always respond in English, regardless of user language.`,
             prompt,
         });
 
