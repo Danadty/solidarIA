@@ -16,6 +16,9 @@ export class FoundationController {
     private cloudinaryService: CloudinaryService,
   ) { }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER)
   @Post()
   create(@Body() createFoundationDto: CreateFoundationDto) {
     return this.foundationService.create(createFoundationDto);
@@ -23,27 +26,39 @@ export class FoundationController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get()
   findAll() {
     return this.foundationService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.foundationService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateFoundationDto: UpdateFoundationDto) {
     return this.foundationService.update(id, updateFoundationDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.foundationService.remove(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Post(':foundationId/upload-logo')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
