@@ -17,6 +17,9 @@ export class UserProfileController {
   ) { }
 
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Post()
   create(@Body() createUserProfileDto: CreateUserProfileDto) {
     return this.userProfileService.create(createUserProfileDto);
@@ -24,16 +27,16 @@ export class UserProfileController {
 
   // @Public()
   @ApiBearerAuth()
-  @UseGuards(AuthGuard,RolesGuard)
-  @Roles(Role.USER)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get()
   findAll() {
     return this.userProfileService.findAll();
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard,RolesGuard)
-  @Roles(Role.USER)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Upload user profile photo with iduser' })
   @Post(':id/upload-photo')
   @UseInterceptors(FileInterceptor('file'))
@@ -50,11 +53,13 @@ export class UserProfileController {
   public async uploadProfilePhoto(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-  ){
+  ) {
     return this.userProfileService.uploadPhoto(file, id);
   }
 
-
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Update user profile photo with iduser' })
   @Patch(':id/update-photo')
   @UseInterceptors(FileInterceptor('file'))

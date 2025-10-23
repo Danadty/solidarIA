@@ -11,10 +11,10 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('campaign-image')
 export class CampaignImageController {
-  constructor(private readonly campaignImageService: CampaignImageService) {}
+  constructor(private readonly campaignImageService: CampaignImageService) { }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard,RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.USER)
   @ApiOperation({ summary: 'Upload campaign image with campaignId' })
   @Post(':campaignId')
@@ -34,16 +34,24 @@ export class CampaignImageController {
     @Param('campaignId') campaignId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body("description") description: string,
-  ){
+  ) {
     return this.campaignImageService.uploadCampaignImage(campaignId, file, description);
   }
 
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Get all campaign images by campaignId' })
   @Get(':campaignId')
-   public async getImagesByCampaign(@Param('campaignId') campaignId: string) {
+  public async getImagesByCampaign(@Param('campaignId') campaignId: string) {
     return this.campaignImageService.getImagesByCampaign(campaignId);
   }
 
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Delete campaign image with imageId' })
   @Delete(':imageId')
   deleteImage(@Param('imageId') imageId: string) {
