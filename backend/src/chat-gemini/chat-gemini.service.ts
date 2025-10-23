@@ -152,7 +152,7 @@ export class ChatGeminiService {
 The user's language is ${userLang}.
 Translate all content below to English and provide a short, friendly recommendation of up to 5 ONGs that best match the user's interest.
 
-NGOs and their campaigns:
+ONGs and their campaigns:
 ${foundationsText}
 
 User: "${userMessage}"
