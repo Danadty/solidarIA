@@ -57,10 +57,10 @@ export class UserService {
   public async findAll() {
     const findAllUsers = await this.prisma.user.findMany({
       select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
+        id: true,
+        name: true,
+        email: true,
+        role: true,
       },
     })
     return findAllUsers.map(user => ({
@@ -68,12 +68,75 @@ export class UserService {
     }));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  public async findOne(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${id}`);
+    }
+
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      });
+      if (!user) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+      return user;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      throw error;
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  public async update(id: string, updateUserDto: UpdateUserDto) {
+    if (!isUUID(id)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${id}`);
+    }
+
+    try {
+      // Verificar que el usuario exista
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+      });
+
+      if (!user) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+
+      // Evitar que se actualicen campos sensibles como "id" o "role" desde el DTO
+      const { password, ...allowedUpdates } = updateUserDto;
+
+      // Preparar los datos a actualizar
+      const dataToUpdate: any = { ...allowedUpdates, updatedAt: new Date() };
+
+      // Si se incluye una contraseña, la encriptamos
+      if (updateUserDto.password) {
+        dataToUpdate.password = await bcrypt.hash(updateUserDto.password, 10);
+      }
+
+      // Realizar actualización
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: dataToUpdate,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          updatedAt: true,
+        },
+      });
+
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
   }
 
   public async remove(id: string) {
@@ -85,20 +148,20 @@ export class UserService {
 
       // Verificar que exista
       const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
+        where: { id },
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+      if (!user) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
 
-    // Eliminar
-    await this.prisma.user.delete({
-      where: { id },
-    });
+      // Eliminar
+      await this.prisma.user.delete({
+        where: { id },
+      });
 
-    return { message: `User with id ${id} has been deleted.` };
-  }catch (error) {
+      return { message: `User with id ${id} has been deleted.` };
+    } catch (error) {
       console.error('Error deleting user:', error);
       throw error; // re-lanza la excepción para que NestJS la maneje
     }
