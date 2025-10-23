@@ -85,6 +85,9 @@ export class UserProfileController {
     });
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Delete user profile photo with iduser' })
   @Delete(':userid/photo')
   public async deletePhoto(
@@ -92,17 +95,23 @@ export class UserProfileController {
   ) {
     return this.userProfileService.deletePhoto(userid);
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
+  @Get(':id')
+  public async findOne(@Param('id') id: string) {
+    return this.userProfileService.findOne(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
+  @Patch(':id')
+  public async update(@Param('id') id: string, @Body() updateUserProfileDto: UpdateUserProfileDto) {
+    return this.userProfileService.update(id, updateUserProfileDto);
+  }
   /*
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-      return this.userProfileService.findOne(+id);
-    }
-  
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateUserProfileDto: UpdateUserProfileDto) {
-      return this.userProfileService.update(+id, updateUserProfileDto);
-    }
-  
     @Delete(':id')
     remove(@Param('id') id: string) {
       return this.userProfileService.remove(+id);

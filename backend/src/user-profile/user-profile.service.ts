@@ -64,13 +64,13 @@ export class UserProfileService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} userProfile`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} userProfile`;
+  // }
 
-  update(id: number, updateUserProfileDto: UpdateUserProfileDto) {
-    return `This action updates a #${id} userProfile`;
-  }
+  // update(id: number, updateUserProfileDto: UpdateUserProfileDto) {
+  //   return `This action updates a #${id} userProfile`;
+  // }
 
   public async remove(id: string) {
     try {
@@ -104,7 +104,7 @@ export class UserProfileService {
   }
 
   public async uploadPhoto(file: Express.Multer.File, userid: string) {
-  
+
     try {
       // Verificar que exista
       const profile = await this.prisma.userProfile.findUnique({
@@ -115,13 +115,13 @@ export class UserProfileService {
       }
       const uploaded = await this.cloudinaryService.uploadImage(file);
 
-    return this.prisma.userProfile.update({
-      where: { id: userid },
-      data: {
-        photoUrl: uploaded.url,
-        publicId: uploaded.public_id,
-      },
-    });
+      return this.prisma.userProfile.update({
+        where: { id: userid },
+        data: {
+          photoUrl: uploaded.url,
+          publicId: uploaded.public_id,
+        },
+      });
     } catch (error) {
       console.error('Error updating user profile photo:', error);
       throw error;
@@ -180,5 +180,79 @@ export class UserProfileService {
       throw error; // re-lanza la excepción para que NestJS la maneje
     }
   }
+
+  public async findOne(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${id}`);
+    }
+    try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          description: true,
+          photoUrl: true,
+          phone: true,
+          address: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          //info del usuario:
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+      if (!profile) {
+        throw new NotFoundException(`User profile with id ${id} not found`);
+      }
+      return profile;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw new BadRequestException('Error fetching user profile');
+    }
+
+  }
+
+  public async update(id: string, updateUserProfileDto: UpdateUserProfileDto) {
+    if (!isUUID(id)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${id}`);
+    }
+    try {
+      // Verificar que exista
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { id },
+      });
+
+      if (!profile) {
+        throw new NotFoundException(`User profile with id ${id} not found`);
+      }
+
+      // Evitar actualización de userId (protegido)
+      const { userId: _, ...safeData } = updateUserProfileDto;
+
+      const updatedProfile = await this.prisma.userProfile.update({
+        where: { id },
+        data: {
+          ...safeData,
+          updatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          description: true,
+          photoUrl: true,
+          phone: true,
+          address: true,
+          updatedAt: true,
+        },
+      });
+      return {
+        message: 'User profile updated successfully',
+        updatedProfile,
+      };
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw new BadRequestException('Error updating user profile');
+    }
+  }
+
 
 }
