@@ -1,25 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { UserCampaignService } from './user-campaign.service';
 import { CreateUserCampaignDto } from './dto/create-user-campaign.dto';
 import { UpdateUserCampaignDto } from './dto/update-user-campaign.dto';
-import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { AuthGuard } from 'src/common/guards/auth.guards';
+import { RolesGuard } from 'src/common/guards/roles.guards';
+import { Role } from 'src/common/types/user.types';
 
 @Controller('user-campaign')
 export class UserCampaignController {
-  constructor(private readonly userCampaignService: UserCampaignService) {}
+  constructor(private readonly userCampaignService: UserCampaignService) { }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Post()
   create(@Body() createUserCampaignDto: CreateUserCampaignDto) {
     return this.userCampaignService.create(createUserCampaignDto);
   }
 
-  
-  
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get()
   findAll() {
     return this.userCampaignService.findAll();
   }
-
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @ApiOperation({ summary: 'Get all campaigns a user has joined' })
   @ApiParam({
     name: 'id',
@@ -28,10 +39,13 @@ export class UserCampaignController {
   })
   @ApiResponse({ status: 200, description: 'List of campaigns for a user' })
   @Get('user/:id')
-  findAllByUser(@Param('id',new ParseUUIDPipe({ version: '4' })) userid: string) {
+  findAllByUser(@Param('id', new ParseUUIDPipe({ version: '4' })) userid: string) {
     return this.userCampaignService.findAllByUser(userid);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Get('campaign/:id')
   @ApiOperation({ summary: 'Get all users associated with a campaign' })
   @ApiParam({
@@ -47,7 +61,10 @@ export class UserCampaignController {
     return this.userCampaignService.findByCampaign(id);
   }
 
-    // unsubscribe a user to a campaign
+  // unsubscribe a user to a campaign
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.FOUNDATION)
   @Delete(':userId/:campaignId')
   async unsubscribe(
     @Param('userId') userId: string,
@@ -56,19 +73,19 @@ export class UserCampaignController {
     return this.userCampaignService.unsubscribe(userId, campaignId);
   }
 
-/*
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userCampaignService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserCampaignDto: UpdateUserCampaignDto) {
-    return this.userCampaignService.update(+id, updateUserCampaignDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userCampaignService.remove(+id);
-  }*/
+  /*
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+      return this.userCampaignService.findOne(+id);
+    }
+  
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() updateUserCampaignDto: UpdateUserCampaignDto) {
+      return this.userCampaignService.update(+id, updateUserCampaignDto);
+    }
+  
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+      return this.userCampaignService.remove(+id);
+    }*/
 }
