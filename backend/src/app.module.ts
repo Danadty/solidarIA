@@ -13,6 +13,7 @@ import { CampaignImageModule } from './campaign-image/campaign-image.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatGeminiModule } from './chat-gemini/chat-gemini.module';
 
 @Module({
   imports: [FoundationModule, PrismaModule, UserModule, CampaignModule, UserCampaignModule, UserProfileModule, DonationsModule, CloudinaryModule, CampaignImageModule, AuthModule,
@@ -28,6 +29,7 @@ import { JwtModule } from '@nestjs/jwt';
         signOptions: { expiresIn: '1d' },
       }),
     }),
+    ChatGeminiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
