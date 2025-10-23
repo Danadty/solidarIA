@@ -20,8 +20,9 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Public()
-  @Get()
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(Role.USER)
   findAll() {
     return this.userService.findAll();
   }
