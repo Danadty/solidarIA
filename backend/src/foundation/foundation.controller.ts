@@ -18,7 +18,7 @@ export class FoundationController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.FOUNDATION)
   @Post()
   create(@Body() createFoundationDto: CreateFoundationDto) {
     return this.foundationService.create(createFoundationDto);

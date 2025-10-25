@@ -29,12 +29,12 @@ export class FoundationService {
         throw new NotFoundException(`User with id ${createFoundationDto.userId} not found`);
       }
 
-      if (user.role !== 'FOUNDATION') {
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { role: 'FOUNDATION' },
-        });
-      }
+      // if (user.role !== 'FOUNDATION') {
+      //   await this.prisma.user.update({
+      //     where: { id: user.id },
+      //     data: { role: 'FOUNDATION' },
+      //   });
+      // }
 
       const foundation = await this.prisma.foundation.create({
         data: {

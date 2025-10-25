@@ -37,10 +37,10 @@ export class CreateUserDto {
     }) //expresion regular
     password: string;
     
-    // @ApiProperty({ enum: UserRole, default: UserRole.USER, description: 'User role' })
-    // @IsOptional()
-    // @IsEnum(UserRole, {
-    //     message: 'Role must be one of: USER, FOUNDATION, or ADMIN',
-    // })
-    // role: UserRole;
+    @ApiProperty({ enum: [UserRole.USER, UserRole.FOUNDATION], default: UserRole.USER, description: 'User role' })
+    @IsOptional()
+    @IsEnum(UserRole, {
+        message: 'Role must be one of: USER, FOUNDATION',
+    })
+    role: UserRole;
 }

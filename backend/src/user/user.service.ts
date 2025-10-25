@@ -36,7 +36,7 @@ export class UserService {
           name: createUserDto.name,
           email: createUserDto.email,
           password: hashedPassword,
-          role: 'USER', // default role
+          role: createUserDto.role || 'USER',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
