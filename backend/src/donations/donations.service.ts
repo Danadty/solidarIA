@@ -19,10 +19,12 @@ export class DonationsService {
       });
       if (!foundation) throw new BadRequestException('Foundation not found');
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: createDonationDto.userId },
-      });
-      if (!user) throw new BadRequestException('User not found');
+      if (createDonationDto.userId) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: createDonationDto.userId },
+        });
+        if (!user) throw new BadRequestException('User not found');
+      }
       const newID = uuidv4();
       return await this.prisma.donation.create({
         data: {
@@ -33,7 +35,7 @@ export class DonationsService {
           donorEmail: createDonationDto.donorEmail,
           paymentMethod: createDonationDto.paymentMethod,
           transactionCode: createDonationDto.transactionCode,
-          userId: createDonationDto.userId,
+          userId: createDonationDto.userId ?? null,
           foundationId: createDonationDto.foundationId,
         },
       });
@@ -141,4 +143,45 @@ export class DonationsService {
     }
 
   }
+  public async findByRole(userId: string, role: string) {
+    if (!isUUID(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
+    try {
+      if (role === 'FOUNDATION') {
+        // buscar la fundación asociada al usuario
+        const foundation = await this.prisma.foundation.findUnique({
+          where: { userId }, // userId del JWT
+        });
+        if (!foundation) throw new BadRequestException('Foundation not found');
+
+        return this.prisma.donation.findMany({
+          where: { foundationId: foundation.id },
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+
+      if (role === 'USER') {
+        // El usuario ve las donaciones que hizo
+        return this.prisma.donation.findMany({
+          where: { userId: userId },
+          include: {
+            foundation: {
+              select: { name: true, description: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching donations by user:', error);
+      throw error;
+    }
+  }
+
 }

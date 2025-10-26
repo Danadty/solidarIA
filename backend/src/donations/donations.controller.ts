@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
@@ -7,10 +7,13 @@ import { RolesGuard } from 'src/common/guards/roles.guards';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/types/user.types';
+import { Public } from 'src/common/decorators/public.decorator';
+
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) { }
 
+  @Public()
   @Post()
   create(@Body() createDonationDto: CreateDonationDto) {
     return this.donationsService.create(createDonationDto);
@@ -24,6 +27,30 @@ export class DonationsController {
   @Get()
   findAll() {
     return this.donationsService.findAll();
+  }
+
+  // listar donaciones de un usuario específico
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard, RolesGuard)
+  // @Roles(Role.FOUNDATION)
+  // @Get('user/:userId')
+  // findByUser(@Param('userId') userId: string) {
+  //   return this.donationsService.findByUser(userId);
+  // }
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard, RolesGuard)
+  // @Roles(Role.USER)
+  // @Get('me') // endpoint para el usuario autenticado
+  // async findMyDonations(@Req() req: any) {
+  //   const userId = req.user.id; // asumimos que el AuthGuard inyecta el usuario
+  //   return this.donationsService.findByUser(userId);
+  // }
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Get('my-donations')
+  async findMyDonations(@Req() req) {
+    const { id, role } = req.user; // viene del token
+    return this.donationsService.findByRole(id, role);
   }
 
   // Cancelar/eliminar donación

@@ -9,22 +9,21 @@ import { RolesGuard } from 'src/common/guards/roles.guards';
 import { Role } from 'src/common/types/user.types';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
-
+import { Public } from 'src/common/decorators/public.decorator';
 @Controller('campaign')
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) { }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Roles(Role.FOUNDATION)
   @Post()
   create(@Body() createCampaignDto: CreateCampaignDto) {
     return this.campaignService.create(createCampaignDto);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @ApiOperation({ summary: 'Get all campaigns by foundation - public' })
+  @Public()
   @Get()
   findAll() {
     return this.campaignService.findAll();
@@ -48,6 +47,15 @@ export class CampaignController {
   @Post(':id/update-portada')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+    required: true,
+  })
   async updatePortada(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,

@@ -42,6 +42,11 @@ export class UserService {
         },
       });
 
+      if ((createUserDto.role || 'USER') === 'USER') {
+        await this.prisma.userProfile.create({
+          data: { userId: user.id }, // campos opcionales quedan vacíos
+        });
+      }
       // return whitout password
       const { password, ...userWithoutPassword } = user;
       return ({

@@ -4,6 +4,7 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isUUID } from 'class-validator';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Foundation } from 'src/foundation/entities/foundation.entity';
 
 @Injectable()
 export class CampaignService {
@@ -51,8 +52,19 @@ export class CampaignService {
   }
 
   public async findAll() {
-    const campaigns = await this.prisma.campaign.findMany();
-    return campaigns.map(campaign => ({
+    const campaigns = await this.prisma.campaign.findMany(
+      {
+        include: {
+          foundation: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }
+    );
+    return campaigns.map(({ publicId, ...campaign }) => ({
       ...campaign,
     }));
   }

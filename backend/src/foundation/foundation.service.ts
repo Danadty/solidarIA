@@ -63,10 +63,13 @@ export class FoundationService {
 
   }
 
+ 
+
   public async findOne(id: string) {
     if (!isUUID(id)) {
       throw new BadRequestException(`Invalid UUID format for id: ${id}`);
     }
+    
     const foundation = await this.prisma.foundation.findUnique({
       where: {
         id: id,
@@ -75,8 +78,23 @@ export class FoundationService {
     if (!foundation) {
       throw new Error(`Foundation with id ${id} not found`);
     }
-    return {
+    // devolver con campañas
+    const campaigns = await this.prisma.campaign.findMany({
+      where: {
+        foundationId: id,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        start_Date: true,
+        end_Date: true,
+        imageUrl:true,
+      },
+    });
+     return {
       ...foundation,
+      campaigns: campaigns,
     };
   }
 
@@ -184,5 +202,16 @@ export class FoundationService {
       console.error('Error deleting foundation logo:', error);
       throw error; // re-lanza la excepción para que NestJS la maneje
     }
+  }
+
+    public async checkFoundation(userId: string) {
+    const foundation = await this.prisma.foundation.findUnique({
+      where: { userId },
+    });
+
+    return {
+      exists: !!foundation,
+      foundation,
+    };
   }
 }

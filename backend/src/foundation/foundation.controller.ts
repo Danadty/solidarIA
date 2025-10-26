@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req } from '@nestjs/common';
 import { FoundationService } from './foundation.service';
 import { CreateFoundationDto } from './dto/create-foundation.dto';
 import { UpdateFoundationDto } from './dto/update-foundation.dto';
@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/common/guards/roles.guards';
 import { AuthGuard } from 'src/common/guards/auth.guards';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/types/user.types';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('foundation')
 export class FoundationController {
@@ -32,9 +33,21 @@ export class FoundationController {
     return this.foundationService.findAll();
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Public()
+  @Get('public')
+  findAllPublicWithoutCampaigns() {
+    return this.foundationService.findAll();
+  }
+
+  // @Public()
+  // @Get('public/with-campaigns')
+  // findAllPublicwithCampaigns() {
+  //   return this.foundationService.findAllCampaigns();
+  // }
+
+
+
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.foundationService.findOne(id);
@@ -80,6 +93,15 @@ export class FoundationController {
       url: uploaded.url,
       publicId: uploaded.public_id,
     });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.FOUNDATION)
+  @Get('me/foundation')
+  public async checkFoundation(@Req() req) {
+    // Solo delegamos al service
+    return this.foundationService.checkFoundation(req.user.id);
   }
 
 }

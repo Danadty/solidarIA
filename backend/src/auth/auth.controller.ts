@@ -1,8 +1,9 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { AuthGuard } from 'src/common/guards/auth.guards';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
@@ -17,6 +18,17 @@ export class AuthController {
         }
         return userToken;
 
+    }
+    
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
+    @Get('me')
+    getProfile(@Req() req) {
+        return {
+            id: req.user.id,
+            email: req.user.email,
+            role: req.user.role,
+        };
     }
 
 

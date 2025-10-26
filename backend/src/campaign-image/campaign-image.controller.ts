@@ -8,6 +8,7 @@ import { RolesGuard } from 'src/common/guards/roles.guards';
 import { AuthGuard } from 'src/common/guards/auth.guards';
 import { Role } from 'src/common/types/user.types';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('campaign-image')
 export class CampaignImageController {
@@ -39,9 +40,7 @@ export class CampaignImageController {
   }
 
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Public()
   @ApiOperation({ summary: 'Get all campaign images by campaignId' })
   @Get(':campaignId')
   public async getImagesByCampaign(@Param('campaignId') campaignId: string) {
