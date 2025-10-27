@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateFoundationDto } from './create-foundation.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Matches } from 'class-validator';
+import { IsOptional, Matches } from 'class-validator';
 
 export class UpdateFoundationDto extends PartialType(CreateFoundationDto) {
       @ApiPropertyOptional({
@@ -25,6 +25,7 @@ export class UpdateFoundationDto extends PartialType(CreateFoundationDto) {
     example: 'https://example.com/logo_nuevo.png',
   })
   @Matches(/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, { message: 'Logo debe ser una URL válida de imagen' })
+  @IsOptional()
   logo_url?: string;
 
   @ApiPropertyOptional({
