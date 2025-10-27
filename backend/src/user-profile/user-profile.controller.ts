@@ -25,10 +25,7 @@ export class UserProfileController {
     return this.userProfileService.create(createUserProfileDto);
   }
 
-  // @Public()
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Public()
   @Get()
   findAll() {
     return this.userProfileService.findAll();
