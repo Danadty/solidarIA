@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  FOUNDATION
+  USER
+}
+
+// Modelos
+model User {
+  id         String      @id @default(uuid()) @db.Uuid
+  name       String
+  email      String      @unique
+  password   String
+  role       UserRole   @default(USER)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  userProfile UserProfile?
+  admin Admin?
+  foundation Foundation?
+
+  userCampaign userCampaign[]
+
+
+  donations    Donation[]   //  Un usuario puede tener muchas donaciones
+
+  @@map("users")
+}
+
+model UserProfile {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  description String?
+  photoUrl   String?
+  publicId   String?
+  phone      String?
+  address    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  user      User @relation(fields: [userId], references: [id])
+  @@map("user_profile")
+}
+
+
+
+model Admin{
+  id      String  @id @default(uuid()) @db.Uuid
+  name    String  @unique
+  userId  String  @unique @db.Uuid
+  user    User    @relation(fields: [userId], references: [id])
+  @@map("admin")
+}
+
+model Foundation {
+  id         String      @id @default(uuid()) @db.Uuid
+  name       String      @unique @db.VarChar(100)
+  description String      @db.Text
+  logo_url   String?   @db.VarChar(255)
+  logoPublicId   String?   @db.VarChar(255)
+  contact_phone    String  @db.VarChar(20)
+  contact_email    String  @db.VarChar(100)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id])
+  userId  String  @unique @db.Uuid
+
+// relation one to many
+  campaigns Campaign[]
+
+
+  donations    Donation[]  // 1:N Donation
+
+  @@map("foundation")
+}
+model Campaign {
+  id         String      @id @default(uuid()) @db.Uuid
+  title      String      @unique
+  description String?    
+  imageUrl   String?
+  publicId   String?
+  start_Date  DateTime   @map("start_date")
+  end_Date    DateTime   @map("end_date")
+ // Relación muchos a muchos con UserCampaign osea user
+  userCampaign userCampaign[]
+
+  // relation many to one
+  foundationId String      @db.Uuid // FK hacia Foundation
+  foundation   Foundation   @relation(fields: [foundationId], references: [id])
+  
+  campaignImage campaignImage[]
+
+
+  @@map("campaign")
+}
+// relation many to many
+model userCampaign {
+  id         String      @id @default(uuid()) @db.Uuid
+  joinDate   DateTime    @default(now()) @map("join_date")
+
+  userId     String      @db.Uuid
+  campaignId String      @db.Uuid
+  user       User        @relation(fields: [userId], references: [id])
+  campaign   Campaign    @relation(fields: [campaignId], references: [id])
+  @@map("user_campaign")
+  @@index([userId, campaignId])
+  @@unique([userId, campaignId])
+}
+
+
+
+model Donation {
+  id         String      @id @default(uuid()) @db.Uuid
+  amount     Decimal     @db.Decimal(10, 2)
+
+  isAnonymous    Boolean      @default(false)
+  donorName      String?
+  donorEmail     String?
+
+  status         DonationStatus @default(PENDING)
+  paymentMethod  PaymentMethod
+  transactionCode String?
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt // only for status change
+  userId     String?      @db.Uuid
+  user       User?        @relation(fields: [userId], references: [id])
+  
+  foundationId String     @db.Uuid  // FK hacia Foundation N:1 
+  foundation   Foundation   @relation(fields: [foundationId], references: [id])
+
+
+
+ @@map("donation")
+}
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+enum PaymentMethod {
+  MERCADO_PAGO
+  // EFECTIVO
+  // SANDBOX
+}
+
+model campaignImage {
+  id         String      @id @default(uuid()) @db.Uuid
+  description String?
+  image_Url   String
+  public_id   String
+  campaignId String       @db.Uuid
+  campaign   Campaign    @relation(fields: [campaignId], references: [id])
+  @@map("campaign_image")
+}

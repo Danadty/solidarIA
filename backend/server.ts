@@ -42,6 +42,7 @@ app.post("/create-preference", async (req: Request, res: Response) => {
             title: item.title,
             quantity: item.quantity,
             unit_price: parseFloat(item.unit_price),
+            // id_ong: item.id_ong
           },
         ],
         back_urls: {
