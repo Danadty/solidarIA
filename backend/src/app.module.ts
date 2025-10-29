@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatGeminiModule } from './chat-gemini/chat-gemini.module';
+import { MercadopagoModule } from './mercadopago/mercadopago.module';
 
 @Module({
   imports: [FoundationModule, PrismaModule, UserModule, CampaignModule, UserCampaignModule, UserProfileModule, DonationsModule, CloudinaryModule, CampaignImageModule, AuthModule,
@@ -30,6 +31,7 @@ import { ChatGeminiModule } from './chat-gemini/chat-gemini.module';
       }),
     }),
     ChatGeminiModule,
+    MercadopagoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
