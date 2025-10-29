@@ -254,5 +254,35 @@ export class UserProfileService {
     }
   }
 
+  public async findOnepublic(id: string) {
+  if (!isUUID(id)) {
+      throw new BadRequestException(`Invalid UUID format for id: ${id}`);
+    }
+    try {
+      const profile = await this.prisma.userProfile.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          description: true,
+          photoUrl: true,
+          phone: true,
+          address: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          //info del usuario:
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+      if (!profile) {
+        throw new NotFoundException(`User profile with id ${id} not found`);
+      }
+      return profile;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw new BadRequestException('Error fetching user profile');
+    }
+
+  }
 
 }

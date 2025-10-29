@@ -108,6 +108,11 @@ export class UserProfileController {
   public async update(@Param('id') id: string, @Body() updateUserProfileDto: UpdateUserProfileDto) {
     return this.userProfileService.update(id, updateUserProfileDto);
   }
+  @Public()
+  @Get('public/:id')
+  public async findOnePublic(@Param('id') id: string) {
+    return this.userProfileService.findOnepublic(id);
+  }
   /*
     @Delete(':id')
     remove(@Param('id') id: string) {
