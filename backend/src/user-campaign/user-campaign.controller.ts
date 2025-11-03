@@ -7,7 +7,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { AuthGuard } from 'src/common/guards/auth.guards';
 import { RolesGuard } from 'src/common/guards/roles.guards';
 import { Role } from 'src/common/types/user.types';
-
+import { Public } from 'src/common/decorators/public.decorator';
 @Controller('user-campaign')
 export class UserCampaignController {
   constructor(private readonly userCampaignService: UserCampaignService) { }
@@ -21,16 +21,13 @@ export class UserCampaignController {
   }
 
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Public()
   @Get()
   findAll() {
     return this.userCampaignService.findAll();
   }
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+
+  @Public()
   @ApiOperation({ summary: 'Get all campaigns a user has joined' })
   @ApiParam({
     name: 'id',
@@ -43,9 +40,7 @@ export class UserCampaignController {
     return this.userCampaignService.findAllByUser(userid);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.FOUNDATION)
+  @Public()
   @Get('campaign/:id')
   @ApiOperation({ summary: 'Get all users associated with a campaign' })
   @ApiParam({

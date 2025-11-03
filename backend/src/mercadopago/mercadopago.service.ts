@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 @Injectable()
 export class MercadoPagoService {
@@ -38,4 +38,15 @@ export class MercadoPagoService {
       throw new Error('Error creating preference');
     }
   }
+
+  async getPayment(paymentId: string): Promise<any> {
+    try {
+      const payment = await new Payment(this.client).get({ id: paymentId });
+      return payment;
+    } catch (error) {
+      console.error('Error obteniendo pago:', error);
+      throw new Error('Error al obtener el pago');
+    }
+  }
+
 }

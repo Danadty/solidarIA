@@ -18,7 +18,7 @@ import { AuthGuard } from './common/guards/auth.guards';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(
-    { origin: '*',  allowedHeaders: 'Content-Type, Authorization' , methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS' }
+    { origin: '*',  allowedHeaders: 'Content-Type, Authorization' , methodstampoco: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS' }
   );
   app.use(new RequestIdMiddleware().use);
   app.useGlobalInterceptors(new LogginInterceptor(), new ResponseInterceptor());

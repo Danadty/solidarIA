@@ -22,5 +22,6 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
   ],
+  exports: [DonationsService],
 })
 export class DonationsModule { }
